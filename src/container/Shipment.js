@@ -25,6 +25,7 @@ import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArro
 import { fetchTrips } from "@/utils/axiosApiServices";
 import Loader from "@/components/Loader";
 import SelectDropdown from "@/components/SelectDropdown";
+import AddTrip from "./AddTrip";
 
 export default function Shipment() {
   const [sortBy, setSortBy] = useState("tripId");
@@ -105,25 +106,29 @@ export default function Shipment() {
   return (
     <Paper elevation={1} sx={{ p: 1, m: 1 }}>
       {loading && <Loader />}
-      <Box sx={{ display: "flex", justifyContent: "space-between", mx: 2 }}>
-        <Typography>Trip List</Typography>
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={6}>
+          <Typography variant="subtitle2">Trip List</Typography>
+        </Grid>
 
         {/* Add Trip and Update Trip Buttons */}
-        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Button
-            variant="contained"
-            size="small"
-            sx={{ textTransform: "none" }}
-          >
-            Add Trip
-          </Button>
-          {selectedTrips.size > 0 && (
-            <Button variant="contained" size="small">
-              Update Trip
+        <Grid item xs={12} sm={6}>
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }} mb={2}>
+            {selectedTrips.size > 0 && (
+              <Button variant="contained" size="small">
+                Update Trip
+              </Button>
+            )}{" "}
+            <Button
+              variant="contained"
+              size="small"
+              sx={{ textTransform: "none" }}
+            >
+              Add Trip
             </Button>
-          )}
-        </Box>
-      </Box>
+          </Box>
+        </Grid>
+      </Grid>
       {/* Table for trips */}
       <TableContainer
         component={Grid}
@@ -314,6 +319,7 @@ export default function Shipment() {
           />
         )}
       </Box>
+      <AddTrip />
     </Paper>
   );
 }

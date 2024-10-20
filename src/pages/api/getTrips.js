@@ -1,5 +1,3 @@
-// pages/api/getTrips.js
-
 import { query } from "@/lib/db";
 import { differenceInDays, parseISO } from "date-fns";
 

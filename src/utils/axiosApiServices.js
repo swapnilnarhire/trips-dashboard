@@ -29,8 +29,8 @@ const axiosInstance = (
   return instance;
 };
 
-export const fetchTrips2 = async () => {
-  const path = `/getActiveGateways`;
+export const getTransporter = async () => {
+  const path = `/api/getTransporter`;
   const res = await axiosInstance().get(path);
   return res && res.data ? res.data : null;
 };
@@ -38,5 +38,11 @@ export const fetchTrips2 = async () => {
 export const fetchTrips = async (data) => {
   const path = `/api/getTrips`;
   const res = await axiosInstance().post(path, data);
+  return res && res.data ? res.data : null;
+};
+
+export const getLocationSuggestions = async () => {
+  const path = `/api/getLocations`;
+  const res = await axiosInstance().get(path);
   return res && res.data ? res.data : null;
 };
