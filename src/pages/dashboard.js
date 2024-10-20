@@ -1,9 +1,9 @@
 // pages/dashboard.js
 import { useContext } from "react";
-import { Button, Typography, Container } from "@mui/material";
+import { Button, Typography, Container, Box } from "@mui/material";
 import { AuthContext } from "@/components/AuthProvider";
 import withAuth from "@/hoc/withAuth";
-import Shipment from "@/components/container/Shipment";
+import Shipment from "@/container/Shipment";
 
 const Dashboard = () => {
   const { keycloak } = useContext(AuthContext);
@@ -13,7 +13,7 @@ const Dashboard = () => {
   };
 
   return (
-    <Container maxWidth="sm" style={{ marginTop: "50px" }}>
+    <Box>
       <Typography variant="h4" gutterBottom>
         Welcome to Intugine Dashboard
       </Typography>
@@ -24,7 +24,7 @@ const Dashboard = () => {
         Logout
       </Button>
       <Shipment />
-    </Container>
+    </Box>
   );
 };
 

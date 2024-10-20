@@ -23,6 +23,7 @@ const SelectDropdown = (props) => {
     id,
     required,
     disabled,
+    size,
   } = props;
 
   return (
@@ -50,6 +51,7 @@ const SelectDropdown = (props) => {
         required={required || false}
         disabled={disabled || false}
         {...props}
+        size={size || "medium"}
       >
         {options &&
           options.length > 0 &&

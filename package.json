@@ -16,9 +16,11 @@
     "@mui/icons-material": "^5.16.7",
     "@mui/material": "^5.16.7",
     "@mui/material-nextjs": "^6.1.4",
+    "axios": "^1.7.7",
     "date-fns": "^4.1.0",
     "keycloak-js": "^26.0.1",
     "next": "14.2.15",
+    "pg": "^8.13.0",
     "react": "^18",
     "react-dom": "^18"
   },

@@ -17,22 +17,55 @@ import {
   PaginationItem,
 } from "@mui/material";
 
+// icons
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrowLeft";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
-import { data } from "@/lib/data";
+import { fetchTrips } from "@/utils/axiosApiServices";
+import Loader from "@/components/Loader";
+import SelectDropdown from "@/components/SelectDropdown";
 
 export default function Shipment() {
   const [sortBy, setSortBy] = useState("tripId");
   const [sortDirection, setSortDirection] = useState("asc");
   const [selectedTrips, setSelectedTrips] = useState(new Set());
-  const [trips, setTrips] = useState(data); // To store the trips data
+  const [trips, setTrips] = useState([]); // To store the trips data
+  const [totalTrips, setTotalTrips] = useState(null);
   const [currentPage, setCurrentPage] = useState(1); // For pagination
-  const [pageSize, setPageSize] = useState(10); // Size of each page
+  const [pageSize, setPageSize] = useState(20); // Size of each page
   const [totalPages, setTotalPages] = useState(0); // Total number of pages
   const [loading, setLoading] = useState(false); // To show a loading state
   const [error, setError] = useState(null); // To handle errors
+
+  // Fetch data from API whenever currentPage or pageSize changes
+  const fetchTripsData = async (payload) => {
+    setLoading(true); // Set loading to true before the API call
+    setError(null); // Reset any previous error state
+
+    fetchTrips(payload)
+      .then((data) => {
+        setTrips(data.trips);
+        setTotalPages(data.totalPages);
+        setPageSize(data.pageSize);
+        setTotalTrips(data.totalTrips);
+      })
+      .catch((err) => {
+        setError("Failed to fetch trips data");
+        console.error(err);
+      })
+      .finally(() => {
+        setLoading(false); // Always set loading to false after the API call
+      });
+  };
+
+  useEffect(() => {
+    const payload = {
+      pageNo: currentPage,
+      size: pageSize,
+    };
+    fetchTripsData(payload); // Call the API
+  }, [currentPage, pageSize]);
 
   const handleSortRequest = (property) => {
     const isAsc = sortBy === property && sortDirection === "asc";
@@ -65,12 +98,13 @@ export default function Shipment() {
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    setPageSize(parseInt(event.target.value, 10));
     setCurrentPage(1);
   };
 
   return (
     <Paper elevation={1} sx={{ p: 1, m: 1 }}>
+      {loading && <Loader />}
       <Box sx={{ display: "flex", justifyContent: "space-between", mx: 2 }}>
         <Typography>Trip List</Typography>
 
@@ -200,7 +234,9 @@ export default function Shipment() {
                     onChange={() => handleSelectTrip(trip._id)}
                   />
                 </TableCell>
-                <TableCell>{trip.tripId}</TableCell>
+                <TableCell component={Typography} noWrap sx={{ maxWidth: 100 }}>
+                  {trip.tripId}
+                </TableCell>
                 <TableCell>{trip.transporter}</TableCell>
                 <TableCell>{trip.source}</TableCell>
                 <TableCell>{trip.dest}</TableCell>
@@ -214,29 +250,70 @@ export default function Shipment() {
           </TableBody>
         </Table>
       </TableContainer>
-      {totalPages > 1 && (
-        <Pagination
-          page={currentPage}
-          count={totalPages}
-          showFirstButton
-          showLastButton
-          onChange={handleChangePage}
-          color="primary"
-          shape="rounded"
-          size="small"
-          renderItem={(item) => (
-            <PaginationItem
-              slots={{
-                previous: KeyboardArrowLeftIcon,
-                next: KeyboardArrowRightIcon,
-                first: KeyboardDoubleArrowLeftIcon,
-                last: KeyboardDoubleArrowRightIcon,
-              }}
-              {...item}
-            />
+      <Box display={"flex"} justifyContent={"space-between"} mt={1}>
+        <Box display={"flex"} justifyContent={"space-around"}>
+          {totalTrips && (
+            <Typography variant="body2" mr={2}>
+              Viewing 1-{pageSize} of &nbsp;
+              {totalTrips} &nbsp; records
+            </Typography>
           )}
-        />
-      )}
+          <Typography variant="body2" mr={2}>
+            Rows per page:
+          </Typography>
+          <SelectDropdown
+            id={"pageSize"}
+            name="pageSize"
+            value={pageSize}
+            handlechange={handleChangeRowsPerPage}
+            variant="outlined"
+            size="small"
+            disabled={loading}
+            options={[
+              {
+                label: "20",
+                value: 20,
+              },
+              {
+                label: "50",
+                value: 50,
+              },
+              {
+                label: "100",
+                value: 100,
+              },
+              {
+                label: "500",
+                value: 500,
+              },
+            ]}
+          />
+        </Box>
+        {totalPages > 0 && (
+          <Pagination
+            page={currentPage}
+            count={totalPages}
+            siblingCount={1}
+            showFirstButton
+            showLastButton
+            onChange={handleChangePage}
+            color="primary"
+            shape="rounded"
+            size="small"
+            renderItem={(item) => (
+              <PaginationItem
+                slots={{
+                  previous: KeyboardArrowLeftIcon,
+                  next: KeyboardArrowRightIcon,
+                  first: KeyboardDoubleArrowLeftIcon,
+                  last: KeyboardDoubleArrowRightIcon,
+                }}
+                {...item}
+              />
+            )}
+          />
+        )}
+      </Box>
     </Paper>
   );
 }
