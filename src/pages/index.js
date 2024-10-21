@@ -1,6 +1,7 @@
 import { Box, Button, Typography } from "@mui/material";
 import Head from "next/head";
 import Link from "next/link";
+import Dashboard from "./dashboard";
 
 export default function Home() {
   return (
@@ -12,14 +13,15 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Box>
-        <Typography variant="h3" gutterBottom>
+        {/* <Typography variant="h3" gutterBottom>
           Welcome to Intugine
         </Typography>
         <Link href="/dashboard" passHref>
           <Button variant="contained" color="primary">
             Go to Dashboard
           </Button>
-        </Link>
+        </Link> */}
+        <Dashboard />
       </Box>
     </>
   );

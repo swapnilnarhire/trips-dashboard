@@ -8,28 +8,52 @@ const calculateTatStatus = ({
   lastPingTime,
   etaDays,
 }) => {
-  // Validate input dates and set start and end times accordingly
-  const start = tripStartTime ? parseISO(tripStartTime) : null;
-  const end = tripEndTime
-    ? parseISO(tripEndTime)
-    : lastPingTime
-    ? parseISO(lastPingTime)
-    : null;
+  // Parse trip start time
+  const start =
+    tripStartTime && typeof tripStartTime === "string"
+      ? parseISO(tripStartTime)
+      : null;
 
-  // If start time is invalid or both end times are invalid, return 'Others'
-  if (!start || !end) {
-    return "Others";
-  }
+  // Parse trip end time or last ping time
+  const end =
+    tripEndTime && typeof tripEndTime === "string"
+      ? parseISO(tripEndTime)
+      : lastPingTime && typeof lastPingTime === "string"
+      ? parseISO(lastPingTime)
+      : null;
 
-  const timeTakenDays = differenceInDays(end, start);
+  // Debugging: Log parsed dates
+  console.log("Parsed Dates:", { start, end, etaDays });
 
+  // Rule 3: If etaDays is 0 or negative, return "Others"
   if (etaDays <= 0) {
     return "Others";
-  } else if (etaDays >= timeTakenDays) {
-    return "On Time";
-  } else {
-    return "Delayed";
   }
+
+  // If both start and end are null, we cannot calculate time taken
+  if (!start) {
+    console.warn("Start time is null or invalid.");
+    return "Others";
+  }
+
+  if (!end) {
+    console.warn("End time is null or invalid.");
+    return "Others";
+  }
+
+  // Calculate time taken in days
+  const timeTakenDays = differenceInDays(end, start);
+
+  // Debugging: Log calculated time taken
+  console.log("Time Taken Days:", timeTakenDays);
+
+  // Rule 1: If etaDays is less than or equal to time taken, return "On Time"
+  if (etaDays >= timeTakenDays) {
+    return "On Time";
+  }
+
+  // Rule 2: If etaDays is greater than time taken, return "Delayed"
+  return "Delayed";
 };
 
 export default async function handler(req, res) {
@@ -39,7 +63,7 @@ export default async function handler(req, res) {
     return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 
-  const { pageNo = 1, size = 10 } = req.body; // Default pageNo = 1 and size = 10 if not provided
+  const { pageNo = 1, size = 10 } = req.body;
 
   // Validate pageNo and size
   if (typeof pageNo !== "number" || typeof size !== "number") {
@@ -58,22 +82,12 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Page size must be greater than 0." });
   }
 
-  // Calculate the offset and limit for pagination
   const offset = (pageNo - 1) * size;
 
-  // SQL query to fetch paginated trips
+  // SQL query to retrieve all details from trips table along with related data
   const sql = `
     SELECT 
-        trip.trip_id, 
-        trip.transporter_id, 
-        trip.trip_start_time, 
-        trip.current_status_code, 
-        trip.current_status, 
-        trip.eta_days, 
-        trip.distance_remaining, 
-        trip.trip_end_time, 
-        trip.last_ping_time, 
-        trip.created_at, 
+        trip.*,
         transporter.transporter_name, 
         transporter.phone_number, 
         source_location.location_name AS source_name, 
@@ -81,81 +95,59 @@ export default async function handler(req, res) {
         source_location.longitude AS source_longitude, 
         destination_location.location_name AS destination_name, 
         destination_location.latitude AS destination_latitude, 
-        destination_location.longitude AS destination_longitude
+        destination_location.longitude AS destination_longitude, 
+        statusTrip.status_code AS current_status_code,
+        statusTrip.status_name AS current_status
     FROM 
-        trip
+        trips AS trip
     INNER JOIN 
         transporter ON trip.transporter_id = transporter.transporter_id
     INNER JOIN 
-        trip_location ON trip.trip_id = trip_location.trip_id
+        location AS source_location ON trip.source_id = source_location.location_id
     INNER JOIN 
-        location AS source_location ON trip_location.source_id = source_location.location_id
+        location AS destination_location ON trip.destination_id = destination_location.location_id
     INNER JOIN 
-        location AS destination_location ON trip_location.dest_id = destination_location.location_id
+        statusTrip ON trip.statusfortrip_id = statusTrip.statusfortrip_id
     LIMIT $1 OFFSET $2;
   `;
 
   // SQL query to count total number of trips
-  const countSql = `SELECT COUNT(*) FROM trip`;
+  const countSql = `SELECT COUNT(*) FROM trips`;
 
   try {
-    // Fetch total number of trips
     const totalTripsResult = await query(countSql);
     const totalTrips = parseInt(totalTripsResult.rows[0].count, 10);
-
-    // Calculate total pages
     const totalPages = Math.ceil(totalTrips / size);
 
-    // Fetch paginated trips
     const result = await query(sql, [size, offset]);
-    const data = result.rows.map(
-      ({
-        trip_id,
-        trip_start_time,
-        current_status_code,
-        current_status,
-        phone_number,
-        eta_days,
-        distance_remaining,
-        trip_end_time,
-        source_name,
-        source_latitude,
-        source_longitude,
-        destination_name,
-        destination_latitude,
-        destination_longitude,
-        last_ping_time,
-        created_at,
-        transporter_name,
-      }) => ({
-        _id: trip_id, // Alias trip_id as _id
-        tripId: trip_id,
-        transporter: transporter_name,
-        tripStartTime: trip_start_time,
-        currentStatusCode: current_status_code,
-        currenStatus: current_status,
-        phoneNumber: phone_number,
-        etaDays: eta_days,
-        distanceRemaining: distance_remaining,
-        tripEndTime: trip_end_time || "", // Default to empty string if null
-        source: source_name,
-        sourceLatitude: source_latitude,
-        sourceLongitude: source_longitude,
-        dest: destination_name,
-        destLatitude: destination_latitude,
-        destLongitude: destination_longitude,
-        lastPingTime: last_ping_time,
-        createdAt: created_at,
-        tatStatus: calculateTatStatus(
-          trip_start_time,
-          trip_end_time,
-          last_ping_time,
-          eta_days
-        ),
-      })
-    );
 
-    // Return the paginated data along with metadata
+    const data = result.rows.map((row) => ({
+      _id: row._id,
+      tripId: row.trip_id,
+      transporter: row.transporter_name,
+      tripStartTime: row.trip_start_time,
+      currentStatusCode: row.current_status_code,
+      currentStatus: row.current_status,
+      phoneNumber: row.phone_number,
+      etaDays: row.eta_days,
+      distanceRemaining: row.distance_remaining,
+      tripEndTime: row.trip_end_time || "",
+      source: row.source_name,
+      sourceLatitude: row.source_latitude,
+      sourceLongitude: row.source_longitude,
+      dest: row.destination_name,
+      destLatitude: row.destination_latitude,
+      destLongitude: row.destination_longitude,
+      lastPingTime: row.last_ping_time,
+      createdAt: row.created_at,
+      tatStatus: calculateTatStatus({
+        tripStartTime: row.trip_start_time,
+        tripEndTime: row.trip_end_time,
+        lastPingTime: row.last_ping_time,
+        etaDays: row.eta_days,
+      }),
+    }));
+
     res.status(200).json({
       currentPage: pageNo,
       totalPages,

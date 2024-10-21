@@ -5,25 +5,12 @@ import { AuthContext } from "@/components/AuthProvider";
 import withAuth from "@/hoc/withAuth";
 import Shipment from "@/container/Shipment";
 import AnalyticCards from "@/container/AnalyticCards";
+import Header from "@/container/Header";
 
 const Dashboard = () => {
-  const { keycloak } = useContext(AuthContext);
-
-  const logout = () => {
-    keycloak.logout({ redirectUri: window.location.origin });
-  };
-
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
-        Welcome to Intugine Dashboard
-      </Typography>
-      <Typography variant="body1" gutterBottom>
-        You are successfully authenticated!
-      </Typography>
-      <Button variant="contained" color="primary" onClick={logout}>
-        Logout
-      </Button>
+      <Header />
       <AnalyticCards />
       <Shipment />
     </Box>

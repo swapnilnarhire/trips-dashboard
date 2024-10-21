@@ -16,6 +16,8 @@ import {
   Pagination,
   PaginationItem,
   CircularProgress,
+  styled,
+  tableCellClasses,
 } from "@mui/material";
 
 // icons
@@ -29,6 +31,16 @@ import SelectDropdown from "@/components/SelectDropdown";
 // Lazily import AddTripDialog
 const AddTrip = React.lazy(() => import("./AddTrip"));
 const UpdateStatus = React.lazy(() => import("./UpdateStatus"));
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [`&.${tableCellClasses.head}`]: {
+    backgroundColor: "#E0E0E0",
+    color: theme.palette.common.black,
+  },
+  [`&.${tableCellClasses.body}`]: {
+    fontSize: 14,
+  },
+}));
 
 export default function Shipment() {
   const [sortBy, setSortBy] = useState("tripId");
@@ -145,7 +157,7 @@ export default function Shipment() {
       {/* Table for trips */}
       <TableContainer
         component={Grid}
-        sx={{ maxHeight: "60vh", overflow: "auto" }}
+        sx={{ maxHeight: "55vh", overflow: "auto" }}
       >
         <Table
           stickyHeader
@@ -153,12 +165,12 @@ export default function Shipment() {
           size="small"
           aria-label="a dense table"
         >
-          <TableHead>
+          <TableHead component="head" style={{ background: "#E0E0E0" }}>
             <TableRow>
-              <TableCell padding="checkbox">
+              <StyledTableCell padding="checkbox">
                 {/* Empty cell for checkboxes */}
-              </TableCell>
-              <TableCell>
+              </StyledTableCell>
+              <StyledTableCell>
                 <TableSortLabel
                   active={sortBy === "tripId"}
                   direction={sortDirection}
@@ -166,8 +178,8 @@ export default function Shipment() {
                 >
                   Trip ID
                 </TableSortLabel>
-              </TableCell>
-              <TableCell>
+              </StyledTableCell>
+              <StyledTableCell>
                 <TableSortLabel
                   active={sortBy === "transporter"}
                   direction={sortDirection}
@@ -175,8 +187,8 @@ export default function Shipment() {
                 >
                   Transporter
                 </TableSortLabel>
-              </TableCell>
-              <TableCell>
+              </StyledTableCell>
+              <StyledTableCell>
                 <TableSortLabel
                   active={sortBy === "source"}
                   direction={sortDirection}
@@ -184,8 +196,8 @@ export default function Shipment() {
                 >
                   Source
                 </TableSortLabel>
-              </TableCell>
-              <TableCell>
+              </StyledTableCell>
+              <StyledTableCell>
                 <TableSortLabel
                   active={sortBy === "dest"}
                   direction={sortDirection}
@@ -193,8 +205,8 @@ export default function Shipment() {
                 >
                   Destination
                 </TableSortLabel>
-              </TableCell>
-              <TableCell>
+              </StyledTableCell>
+              <StyledTableCell>
                 <TableSortLabel
                   active={sortBy === "phoneNumber"}
                   direction={sortDirection}
@@ -202,8 +214,8 @@ export default function Shipment() {
                 >
                   Phone
                 </TableSortLabel>
-              </TableCell>
-              <TableCell>
+              </StyledTableCell>
+              <StyledTableCell>
                 <TableSortLabel
                   active={sortBy === "etaDays"}
                   direction={sortDirection}
@@ -211,8 +223,8 @@ export default function Shipment() {
                 >
                   ETA
                 </TableSortLabel>
-              </TableCell>
-              <TableCell>
+              </StyledTableCell>
+              <StyledTableCell>
                 <TableSortLabel
                   active={sortBy === "distanceRemaining"}
                   direction={sortDirection}
@@ -220,8 +232,8 @@ export default function Shipment() {
                 >
                   Distance Remaining
                 </TableSortLabel>
-              </TableCell>
-              <TableCell>
+              </StyledTableCell>
+              <StyledTableCell>
                 <TableSortLabel
                   active={sortBy === "currenStatus"}
                   direction={sortDirection}
@@ -229,8 +241,8 @@ export default function Shipment() {
                 >
                   Trip Status
                 </TableSortLabel>
-              </TableCell>
-              <TableCell>
+              </StyledTableCell>
+              <StyledTableCell>
                 <TableSortLabel
                   active={sortBy === "tatStatus"}
                   direction={sortDirection}
@@ -238,7 +250,7 @@ export default function Shipment() {
                 >
                   TAT Status
                 </TableSortLabel>
-              </TableCell>
+              </StyledTableCell>
             </TableRow>
           </TableHead>
 
@@ -261,14 +273,14 @@ export default function Shipment() {
                 <TableCell>{trip.phoneNumber}</TableCell>
                 <TableCell>{trip.etaDays}</TableCell>
                 <TableCell>{trip.distanceRemaining}</TableCell>
-                <TableCell>{trip.currenStatus}</TableCell>
+                <TableCell>{trip.currentStatus}</TableCell>
                 <TableCell>{trip?.tatStatus}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
-      <Box display={"flex"} justifyContent={"space-between"} mt={1}>
+      <Box display={"flex"} justifyContent={"space-between"} mt={0.5}>
         <Box display={"flex"} justifyContent={"space-around"}>
           {totalTrips && (
             <Typography variant="body2" mr={2}>

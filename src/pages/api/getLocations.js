@@ -9,14 +9,24 @@ export default async function handler(req, res) {
 
   // SQL query to fetch paginated trips
   const sql = `SELECT * FROM location`;
-
+  // location_id, location_name, latitude, longitude }) => ({
+  //   label: `${location_name}-lat(${latitude})-long(${longitude})`,
   try {
     // Fetch paginated trips
     const result = await query(sql);
-    const data = result.rows.map(({ location_id, location_name }) => ({
-      label: location_name,
-      value: location_id,
-    }));
+    const data = result.rows.map(
+      ({ location_id, location_name, latitude, longitude }) => ({
+        label:
+          location_name +
+          " - lat(" +
+          latitude +
+          ")" +
+          " -long(" +
+          longitude +
+          ")",
+        value: location_id,
+      })
+    );
 
     // Return the paginated data along with metadata
     res.status(200).json(data);
