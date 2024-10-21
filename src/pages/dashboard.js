@@ -4,6 +4,7 @@ import { Button, Typography, Container, Box } from "@mui/material";
 import { AuthContext } from "@/components/AuthProvider";
 import withAuth from "@/hoc/withAuth";
 import Shipment from "@/container/Shipment";
+import AnalyticCards from "@/container/AnalyticCards";
 
 const Dashboard = () => {
   const { keycloak } = useContext(AuthContext);
@@ -23,6 +24,7 @@ const Dashboard = () => {
       <Button variant="contained" color="primary" onClick={logout}>
         Logout
       </Button>
+      <AnalyticCards />
       <Shipment />
     </Box>
   );

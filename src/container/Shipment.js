@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -15,6 +15,7 @@ import {
   Grid,
   Pagination,
   PaginationItem,
+  CircularProgress,
 } from "@mui/material";
 
 // icons
@@ -25,7 +26,9 @@ import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArro
 import { fetchTrips } from "@/utils/axiosApiServices";
 import Loader from "@/components/Loader";
 import SelectDropdown from "@/components/SelectDropdown";
-import AddTrip from "./AddTrip";
+// Lazily import AddTripDialog
+const AddTrip = React.lazy(() => import("./AddTrip"));
+const UpdateStatus = React.lazy(() => import("./UpdateStatus"));
 
 export default function Shipment() {
   const [sortBy, setSortBy] = useState("tripId");
@@ -38,6 +41,8 @@ export default function Shipment() {
   const [totalPages, setTotalPages] = useState(0); // Total number of pages
   const [loading, setLoading] = useState(false); // To show a loading state
   const [error, setError] = useState(null); // To handle errors
+  const [openAddTrip, setOpenAddTrip] = useState(false);
+  const [openUpStatus, setOpenUpStatus] = useState(false);
 
   // Fetch data from API whenever currentPage or pageSize changes
   const fetchTripsData = async (payload) => {
@@ -115,14 +120,22 @@ export default function Shipment() {
         <Grid item xs={12} sm={6}>
           <Box sx={{ display: "flex", justifyContent: "flex-end" }} mb={2}>
             {selectedTrips.size > 0 && (
-              <Button variant="contained" size="small">
-                Update Trip
+              <Button
+                variant="outlined"
+                size="small"
+                sx={{ textTransform: "none", mr: 1 }}
+                onClick={() => setOpenUpStatus(true)}
+                disabled={openUpStatus}
+              >
+                Update status
               </Button>
             )}{" "}
             <Button
               variant="contained"
               size="small"
-              sx={{ textTransform: "none" }}
+              sx={{ textTransform: "none", ml: 1 }}
+              onClick={() => setOpenAddTrip(true)}
+              disabled={openAddTrip}
             >
               Add Trip
             </Button>
@@ -319,7 +332,19 @@ export default function Shipment() {
           />
         )}
       </Box>
-      <AddTrip />
+      <Suspense fallback={<CircularProgress />}>
+        {openAddTrip && (
+          <AddTrip open={openAddTrip} onClose={() => setOpenAddTrip(false)} />
+        )}
+      </Suspense>
+      <Suspense fallback={<CircularProgress />}>
+        {openUpStatus && (
+          <UpdateStatus
+            open={openUpStatus}
+            onClose={() => setOpenUpStatus(false)}
+          />
+        )}
+      </Suspense>
     </Paper>
   );
 }

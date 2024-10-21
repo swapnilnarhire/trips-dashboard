@@ -8,12 +8,19 @@ import {
   Typography,
   Grid,
   Autocomplete,
+  Dialog,
+  DialogTitle,
+  IconButton,
+  DialogContent,
 } from "@mui/material";
+import SelectDropdown from "@/components/SelectDropdown";
+
 import {
   getTransporter,
   getLocationSuggestions,
 } from "@/utils/axiosApiServices"; // Assuming you have an API service for location
-import SelectDropdown from "@/components/SelectDropdown";
+
+import CloseIcon from "@mui/icons-material/Close";
 
 // Regular expression for Trip ID (only numbers)
 const tripIdRegex = /^[0-9]+$/;
@@ -30,7 +37,7 @@ const validationSchema = Yup.object({
     .required("Phone number is required"),
 });
 
-const AddTrip = () => {
+const AddTrip = ({ open, onClose }) => {
   const [couriers, setCouriers] = useState([]);
   const [loading, setLoading] = useState(false); // To show a loading state
   const [error, setError] = useState(null); // To handle errors
@@ -120,169 +127,192 @@ const AddTrip = () => {
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom>
-        Add Trip Details
-      </Typography>
-
-      <Grid container spacing={2}>
-        {/* Trip ID Field */}
-        <Grid item xs={12} sm={6}>
-          <Typography variant="subtitle2">Trip ID</Typography>
-          <TextField
-            fullWidth
-            id="tripId"
-            name="tripId"
-            placeholder="Enter Trip ID"
-            value={formik.values.tripId}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.tripId && Boolean(formik.errors.tripId)}
-            helperText={formik.touched.tripId && formik.errors.tripId}
-            size="small"
-          />
-        </Grid>
-
-        {/* Transporter Dropdown */}
-        <Grid item xs={12} sm={6}>
-          <Typography variant="subtitle2">Transporter</Typography>
-          <SelectDropdown
-            id={"transporter"}
-            name="transporter"
-            value={formik.values.transporter}
-            handlechange={(e) => {
-              formik.setFieldValue(`transporter`, e.target.value);
-              const findPhone = couriers.find(
-                (c) => c.value === e.target.value
-              );
-              if (findPhone) {
-                formik.setFieldValue(`phone`, findPhone?.phone_number);
-              }
+      <Dialog open={open} fullWidth maxWidth="md">
+        <DialogTitle>
+          Add Trip
+          <IconButton
+            aria-label="close"
+            onClick={onClose}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
             }}
-            variant="outlined"
-            size="small"
-            disabled={loading}
-            options={couriers}
-            error={
-              formik.touched.transporter && Boolean(formik.errors.transporter)
-            }
-            helperText={formik.touched.transporter && formik.errors.transporter}
-          />
-        </Grid>
-
-        {/* Source Autocomplete */}
-        <Grid item xs={12} sm={6}>
-          <Typography variant="subtitle2">Source</Typography>
-          <Autocomplete
-            fullWidth
-            options={sourceOptions}
-            getOptionLabel={(option) => option.label || ""}
-            onInputChange={(event, newInputValue) => {
-              fetchOptions(newInputValue, "source");
-              formik.setFieldValue("source", newInputValue);
-              formik.setFieldTouched("source", true);
-            }}
-            onChange={(event, newValue) => {
-              formik.setFieldValue("source", newValue ? newValue.value : "");
-              formik.setFieldTouched("source", true);
-            }}
-            renderInput={(params) => (
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>{" "}
+        <DialogContent dividers>
+          <Grid container spacing={2}>
+            {/* Trip ID Field */}
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2">Trip ID</Typography>
               <TextField
-                {...params}
-                name="source"
-                placeholder="Enter Source Location"
-                error={formik.touched.source && Boolean(formik.errors.source)}
-                helperText={formik.touched.source && formik.errors.source}
+                fullWidth
+                id="tripId"
+                name="tripId"
+                placeholder="Enter Trip ID"
+                value={formik.values.tripId}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.tripId && Boolean(formik.errors.tripId)}
+                helperText={formik.touched.tripId && formik.errors.tripId}
                 size="small"
               />
-            )}
-          />
-        </Grid>
+            </Grid>
 
-        {/* Destination Autocomplete */}
-        <Grid item xs={12} sm={6}>
-          <Typography variant="subtitle2">Destination</Typography>
-          <Autocomplete
-            fullWidth
-            options={destinationOptions}
-            getOptionLabel={(option) => option.label || ""}
-            onInputChange={(event, newInputValue) => {
-              fetchOptions(newInputValue, "destination");
-              formik.setFieldValue("destination", newInputValue);
-              formik.setFieldTouched("destination", true);
-            }}
-            onChange={(event, newValue) => {
-              formik.setFieldValue(
-                "destination",
-                newValue ? newValue.value : ""
-              );
-              formik.setFieldTouched("destination", true);
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                name="destination"
-                placeholder="Enter Destination Location"
+            {/* Transporter Dropdown */}
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2">Transporter</Typography>
+              <SelectDropdown
+                id={"transporter"}
+                name="transporter"
+                value={formik.values.transporter}
+                handlechange={(e) => {
+                  formik.setFieldValue(`transporter`, e.target.value);
+                  const findPhone = couriers.find(
+                    (c) => c.value === e.target.value
+                  );
+                  if (findPhone) {
+                    formik.setFieldValue(`phone`, findPhone?.phone_number);
+                  }
+                }}
+                variant="outlined"
+                size="small"
+                disabled={loading}
+                options={couriers}
                 error={
-                  formik.touched.destination &&
-                  Boolean(formik.errors.destination)
+                  formik.touched.transporter &&
+                  Boolean(formik.errors.transporter)
                 }
                 helperText={
-                  formik.touched.destination && formik.errors.destination
+                  formik.touched.transporter && formik.errors.transporter
                 }
-                size="small"
               />
-            )}
-          />
-        </Grid>
+            </Grid>
 
-        {/* Phone Field */}
-        <Grid item xs={12} sm={6}>
-          <Typography variant="subtitle2">Phone</Typography>
-          <TextField
-            fullWidth
-            id="phone"
-            name="phone"
-            placeholder="Enter Phone Number"
-            value={formik.values.phone}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.phone && Boolean(formik.errors.phone)}
-            helperText={formik.touched.phone && formik.errors.phone}
-            size="small"
-            disabled
-          />
-        </Grid>
+            {/* Source Autocomplete */}
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2">Source</Typography>
+              <Autocomplete
+                fullWidth
+                options={sourceOptions}
+                getOptionLabel={(option) => option.label || ""}
+                onInputChange={(event, newInputValue) => {
+                  fetchOptions(newInputValue, "source");
+                  formik.setFieldValue("source", newInputValue);
+                  formik.setFieldTouched("source", true);
+                }}
+                onChange={(event, newValue) => {
+                  formik.setFieldValue(
+                    "source",
+                    newValue ? newValue.value : ""
+                  );
+                  formik.setFieldTouched("source", true);
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    name="source"
+                    placeholder="Enter Source Location"
+                    error={
+                      formik.touched.source && Boolean(formik.errors.source)
+                    }
+                    helperText={formik.touched.source && formik.errors.source}
+                    size="small"
+                  />
+                )}
+              />
+            </Grid>
 
-        {/* Submit Button */}
-        <Grid item xs={12}>
-          <Box display={"flex"} justifyContent={"flex-end"}>
-            <Button
-              onClick={formik.resetForm}
-              variant="contained"
-              color="primary"
-              size="small"
-              disabled={
-                !(formik.isValid && formik.dirty) || formik.isSubmitting
-              } // Disable if form is invalid, untouched, or submitting
-              sx={{ mr: 1 }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={formik.handleSubmit}
-              variant="contained"
-              color="primary"
-              size="small"
-              disabled={
-                !(formik.isValid && formik.dirty) || formik.isSubmitting
-              } // Disable if form is invalid, untouched, or submitting
-              sx={{ ml: 1 }}
-            >
-              {formik.isSubmitting ? "Adding trip..." : "Add trip"}
-            </Button>
-          </Box>
-        </Grid>
-      </Grid>
+            {/* Destination Autocomplete */}
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2">Destination</Typography>
+              <Autocomplete
+                fullWidth
+                options={destinationOptions}
+                getOptionLabel={(option) => option.label || ""}
+                onInputChange={(event, newInputValue) => {
+                  fetchOptions(newInputValue, "destination");
+                  formik.setFieldValue("destination", newInputValue);
+                  formik.setFieldTouched("destination", true);
+                }}
+                onChange={(event, newValue) => {
+                  formik.setFieldValue(
+                    "destination",
+                    newValue ? newValue.value : ""
+                  );
+                  formik.setFieldTouched("destination", true);
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    name="destination"
+                    placeholder="Enter Destination Location"
+                    error={
+                      formik.touched.destination &&
+                      Boolean(formik.errors.destination)
+                    }
+                    helperText={
+                      formik.touched.destination && formik.errors.destination
+                    }
+                    size="small"
+                  />
+                )}
+              />
+            </Grid>
+
+            {/* Phone Field */}
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2">Phone</Typography>
+              <TextField
+                fullWidth
+                id="phone"
+                name="phone"
+                placeholder="Enter Phone Number"
+                value={formik.values.phone}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.phone && Boolean(formik.errors.phone)}
+                helperText={formik.touched.phone && formik.errors.phone}
+                size="small"
+                disabled
+              />
+            </Grid>
+
+            {/* Submit Button */}
+            <Grid item xs={12}>
+              <Box display={"flex"} justifyContent={"flex-end"}>
+                <Button
+                  onClick={formik.resetForm}
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  disabled={
+                    !(formik.isValid && formik.dirty) || formik.isSubmitting
+                  } // Disable if form is invalid, untouched, or submitting
+                  sx={{ mr: 1 }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={formik.handleSubmit}
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  disabled={
+                    !(formik.isValid && formik.dirty) || formik.isSubmitting
+                  } // Disable if form is invalid, untouched, or submitting
+                  sx={{ ml: 1 }}
+                >
+                  {formik.isSubmitting ? "Adding trip..." : "Add trip"}
+                </Button>
+              </Box>
+            </Grid>
+          </Grid>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };
