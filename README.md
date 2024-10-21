@@ -2,6 +2,12 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Doker setup for KEYCLOAK_ADMIN
 
+docker pull postgres
+docker run --name my-postgres-container -e POSTGRES_PASSWORD=mysecretpassword -d postgres
+docker ps
+docker-compose up
+docker-compose up -d
+
 docker run -d --name keycloak -e DB_VENDOR=postgres -e DB_ADDR=ep-dawn-wave-a15iulcz.ap-southeast-1.aws.neon.tech -e DB_PORT=5432 -e DB_DATABASE=trips_dashboard -e DB_USER=trips_dashboard_owner -e DB_PASSWORD=l3AZdvE8Fqxn -e JDBC_PARAMS="sslmode=require" -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin -p 8080:8080 quay.io/keycloak/keycloak:26.0.0 start-dev
 then import the intugine-realm.jon file
 add adapter config trips_dashboard, keycloak
