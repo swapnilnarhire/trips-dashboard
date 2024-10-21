@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  server:
+    build:
+      context: .
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://trips_dashboard_owner:password@db:5432/trips_dashboard # Update with your actual database credentials
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db # Ensures PostgreSQL starts before the Next.js app
+    networks:
+      - app-network
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: trips_dashboard # Use your actual database name
+      POSTGRES_USER: trips_dashboard_owner # Use your actual PostgreSQL user
+      POSTGRES_PASSWORD: password # Use a secure password here
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "trips_dashboard_owner"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432" # Expose PostgreSQL port
+
+volumes:
+  db-data:
+
+networks:
+  app-network:
