@@ -1,10 +1,9 @@
-// components/withAuth.js
 import { AuthContext } from "@/components/AuthProvider";
 import Loader from "@/components/Loader";
 import { useContext } from "react";
 
 const withAuth = (WrappedComponent) => {
-  return (props) => {
+  const AuthenticatedComponent = (props) => {
     const auth = useContext(AuthContext);
 
     if (!auth.authenticated) {
@@ -14,6 +13,13 @@ const withAuth = (WrappedComponent) => {
 
     return <WrappedComponent {...props} auth={auth} />;
   };
+
+  // Add a display name for debugging purposes
+  AuthenticatedComponent.displayName = `withAuth(${
+    WrappedComponent.displayName || WrappedComponent.name || "Component"
+  })`;
+
+  return AuthenticatedComponent;
 };
 
 export default withAuth;
