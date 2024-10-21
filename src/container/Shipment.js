@@ -98,6 +98,8 @@ export default function Shipment() {
     } else {
       newSelectedTrips.add(tripId);
     }
+    console.log("newSelectedTrips", newSelectedTrips);
+
     setSelectedTrips(newSelectedTrips);
   };
 
@@ -273,8 +275,32 @@ export default function Shipment() {
                 <TableCell>{trip.phoneNumber}</TableCell>
                 <TableCell>{trip.etaDays}</TableCell>
                 <TableCell>{trip.distanceRemaining}</TableCell>
-                <TableCell>{trip.currentStatus}</TableCell>
-                <TableCell>{trip?.tatStatus}</TableCell>
+                <TableCell>
+                  <Button
+                    size="small"
+                    sx={{ background: "#D7E3FE", textTransform: "none", px: 3 }}
+                    disableElevation
+                  >
+                    {trip.currentStatus}
+                  </Button>
+                </TableCell>
+                <TableCell>
+                  {" "}
+                  <Button
+                    size="small"
+                    color={
+                      trip?.tatStatus === "Others"
+                        ? "warning"
+                        : trip?.tatStatus === "On Time"
+                        ? "success"
+                        : "error"
+                    }
+                    sx={{ textTransform: "none" }}
+                    disableElevation
+                  >
+                    {trip?.tatStatus}
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -346,7 +372,16 @@ export default function Shipment() {
       </Box>
       <Suspense fallback={<CircularProgress />}>
         {openAddTrip && (
-          <AddTrip open={openAddTrip} onClose={() => setOpenAddTrip(false)} />
+          <AddTrip
+            open={openAddTrip}
+            onClose={() => setOpenAddTrip(false)}
+            upadteData={() => {
+              fetchTripsData({
+                pageNo: currentPage,
+                size: pageSize,
+              });
+            }}
+          />
         )}
       </Suspense>
       <Suspense fallback={<CircularProgress />}>
@@ -354,6 +389,13 @@ export default function Shipment() {
           <UpdateStatus
             open={openUpStatus}
             onClose={() => setOpenUpStatus(false)}
+            upadteData={() => {
+              fetchTripsData({
+                pageNo: currentPage,
+                size: pageSize,
+              });
+            }}
+            tripIdsSet={selectedTrips}
           />
         )}
       </Suspense>

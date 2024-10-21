@@ -18,9 +18,11 @@ import SelectDropdown from "@/components/SelectDropdown";
 import {
   getTransporter,
   getLocationSuggestions,
+  addNewTrip,
 } from "@/utils/axiosApiServices"; // Assuming you have an API service for location
 
 import CloseIcon from "@mui/icons-material/Close";
+import Loader from "@/components/Loader";
 
 // Regular expression for Trip ID (only numbers)
 const tripIdRegex = /^[0-9]+$/;
@@ -37,7 +39,7 @@ const validationSchema = Yup.object({
     .required("Phone number is required"),
 });
 
-const AddTrip = ({ open, onClose }) => {
+const AddTrip = ({ open, onClose, upadteData }) => {
   const [couriers, setCouriers] = useState([]);
   const [loading, setLoading] = useState(false); // To show a loading state
   const [error, setError] = useState(null); // To handle errors
@@ -56,7 +58,29 @@ const AddTrip = ({ open, onClose }) => {
     validateOnChange: true,
     validationSchema: validationSchema,
     onSubmit: (values) => {
-      console.log(values);
+      setLoading(true); // Set loading to true before the API call
+      setError(null);
+      const payload = {
+        _id: values.tripId,
+        source_id: values?.source,
+        destination_id: values?.destination,
+        transporter_id: values?.transporter,
+      };
+      addNewTrip(payload)
+        .then((res) => {
+          alert("suuccessful!");
+          formik.resetForm();
+          onClose();
+          upadteData();
+        })
+        .catch((err) => {
+          console.log("Error: " + err);
+          setError(err);
+        })
+        .finally(() => {
+          setLoading(false);
+          formik.setSubmitting(false);
+        });
     },
   });
 
@@ -127,6 +151,7 @@ const AddTrip = ({ open, onClose }) => {
 
   return (
     <Box>
+      {loading && <Loader />}
       <Dialog open={open} fullWidth maxWidth="md">
         <DialogTitle>
           Add Trip

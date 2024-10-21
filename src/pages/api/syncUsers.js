@@ -1,5 +1,3 @@
-// pages/api/syncUsers.js
-
 import jwt from "jsonwebtoken";
 import axios from "axios";
 

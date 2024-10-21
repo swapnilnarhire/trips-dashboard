@@ -46,3 +46,21 @@ export const getLocationSuggestions = async () => {
   const res = await axiosInstance().get(path);
   return res && res.data ? res.data : null;
 };
+
+export const getStatus = async () => {
+  const path = `/api/getStatus`;
+  const res = await axiosInstance().get(path);
+  return res && res.data ? res.data : null;
+};
+
+export const addNewTrip = async (data) => {
+  const path = `/api/trips`;
+  const res = await axiosInstance().post(path, data);
+  return res && res.data ? res.data : null;
+};
+
+export const updateTrips = async (data) => {
+  const path = `/api/updateTrips`;
+  const res = await axiosInstance().post(path, data);
+  return res && res.data ? res.data : null;
+};

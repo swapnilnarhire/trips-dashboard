@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import {
@@ -15,6 +15,8 @@ import {
 
 import SelectDropdown from "@/components/SelectDropdown";
 import CloseIcon from "@mui/icons-material/Close";
+import { getStatus, updateTrips } from "@/utils/axiosApiServices";
+import Loader from "@/components/Loader";
 
 const validationSchema = Yup.object({
   status: Yup.string().required("Status is required"),
@@ -25,16 +27,36 @@ const validationSchema = Yup.object({
   // .min(new Date(), "Date must be in the future"), // Ensures that date is not in the past
 });
 
-export default function UpdateStatus({ open, onClose }) {
-  const [statusOptions] = useState([
-    { label: "Booked", value: "BKD" },
-    { label: "In Transit", value: "INT" },
-    { label: "Reached Destination", value: "RD" },
-    { label: "Delivered", value: "DEL" },
-  ]);
+export default function UpdateStatus({
+  open,
+  onClose,
+  upadteData,
+  tripIdsSet,
+}) {
+  const [statusOptions, setStatusOptions] = useState([]);
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null); // To handle errors
 
+  const getStatusData = () => {
+    setLoading(true); // Set loading to true before the API call
+    setError(null); // Reset any previous error state
+    getStatus()
+      .then((res) => {
+        setStatusOptions(res);
+      })
+      .catch((err) => {
+        console.log("Error: " + err);
+        setError(err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    getStatusData();
+  }, []);
   // Formik setup
   const formik = useFormik({
     initialValues: {
@@ -42,22 +64,36 @@ export default function UpdateStatus({ open, onClose }) {
       status: "",
     },
     validationSchema,
-    onSubmit: async (values, { setSubmitting }) => {
-      setLoading(true);
-      try {
-        console.log("Form values:", values);
-        // Add your form submission logic here (API calls, etc.)
-      } catch (error) {
-        console.error("Form submission error:", error);
-      } finally {
-        setLoading(false);
-        setSubmitting(false);
-      }
+    onSubmit: (values) => {
+      setLoading(true); // Set loading to true before the API call
+      setError(null);
+      const tripIdsArray = Array.from(tripIdsSet); // Convert Set to Array
+      const payload = {
+        tripIds: tripIdsArray,
+        statusForTripId: values.status,
+        statusDate: values.date,
+      };
+      updateTrips(payload)
+        .then((res) => {
+          alert("Successfully updated");
+          formik.resetForm();
+          onClose();
+          upadteData();
+        })
+        .catch((err) => {
+          console.log("Error: " + err);
+          setError(err);
+        })
+        .finally(() => {
+          setLoading(false);
+          formik.setSubmitting(false);
+        });
     },
   });
 
   return (
     <Box>
+      {loading && <Loader />}
       <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
         <DialogTitle>
           Update Status
